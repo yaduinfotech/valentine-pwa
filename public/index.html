@@ -265,8 +265,14 @@
         .particle {
             position: fixed;
             top: -10%;
-            animation: fall 12s linear forwards;
+            animation: fall 12s linear forwards, pulse 1s infinite;
             font-size: 24px
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
         }
 
         @keyframes fall {
@@ -424,7 +430,7 @@
 
     <button id="musicToggle" onclick="toggleMusic()">🎵</button>
 
-    <div id="dayTester">
+    <!-- <div id="dayTester">
         <button class="test-btn" onclick="testDay(7)">7</button>
         <button class="test-btn" onclick="testDay(8)">8</button>
         <button class="test-btn" onclick="testDay(9)">9</button>
@@ -433,7 +439,7 @@
         <button class="test-btn" onclick="testDay(12)">12</button>
         <button class="test-btn" onclick="testDay(13)">13</button>
         <button class="test-btn" onclick="testDay(14)">14</button>
-    </div>
+    </div> -->
 
     <audio id="bgMusic" loop></audio>
 
@@ -527,7 +533,7 @@
 <div style="font-size:120px;">💑</div>`;
                 lock.classList.add("hidden");
                 startFireworks();
-                setTimeout(() => shareCard.style.display = "block", 2800);
+                setTimeout(() => shareCard.style.display = "block", 8800);
                 return;
             }
 
@@ -637,7 +643,7 @@
             // Show share card after emotion lands
             setTimeout(() => {
                 document.getElementById("shareCard").style.display = "block";
-            }, 8800);
+            }, 88000);
         }
 
 
@@ -650,32 +656,44 @@
 
             let tries = 0;
             let yesScale = 1;
+            let messageInterval;
 
             if (!noBtn || !msg || !yesBtn) return;
 
-            noBtn.addEventListener("mouseover", () => {
+            // Prevent clicking on no button
+            noBtn.addEventListener("click", (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            });
+
+            // Function to show random messages
+            const showRandomMessage = () => {
                 tries++;
+                const messages = [
+                    "😢 Think again…",
+                    "🥺 Please don’t say no…",
+                    "🧸 Teddy is crying…",
+                    "💔 My heart is breaking…",
+                    "😭 Why not yes?",
+                    "❤️ Choose love!",
+                    "😊 Say yes please!",
+                    "🌹 Roses are waiting!",
+                    "🍫 Chocolate dreams!",
+                    "🧸 Hug me instead!"
+                ];
+                const colors = ["#ffd1dc", "#ff9aa2", "#ff4d4d", "#ff6b9d", "#ff85a2"];
 
-                /* MOVE NO BUTTON */
-                noBtn.style.transform =
-                    `translate(${Math.random() * 140 - 70}px,${Math.random() * 80 - 40}px)`;
-
-                /* THINK AGAIN MESSAGE */
+                msg.innerText = messages[Math.floor(Math.random() * messages.length)];
+                msg.style.color = colors[Math.floor(Math.random() * colors.length)];
                 msg.style.opacity = "1";
                 msg.style.animation = "none";
                 msg.offsetHeight; // reset animation
                 msg.style.animation = "shake 0.4s";
 
-                if (tries === 1) {
-                    msg.innerText = "😢 Think again…";
-                    msg.style.color = "#ffd1dc";
-                } else if (tries === 2) {
-                    msg.innerText = "🥺 Please don’t say no…";
-                    msg.style.color = "#ff9aa2";
-                } else {
-                    msg.innerText = "🧸 Teddy is crying…";
-                    msg.style.color = "#ff4d4d";
-                }
+                /* MOVE NO BUTTON */
+                noBtn.style.transform =
+                    `translate(${Math.random() * 140 - 70}px,${Math.random() * 80 - 40}px)`;
 
                 /* HEARTBEAT */
                 heart.style.display = "block";
@@ -687,15 +705,14 @@
                 yesScale += 0.08;
                 yesBtn.style.transform = `scale(${yesScale})`;
 
-                /* WHISPER SOUND */
-                if (whisper) {
-                    whisper.currentTime = 0;
-                    whisper.volume = Math.min(0.4, 0.15 + tries * 0.05);
-                    whisper.play().catch(() => { });
-                }
-            });
+            };
 
+            noBtn.addEventListener("mouseover", showRandomMessage);
 
+            // Keep showing random messages every few seconds
+            messageInterval = setInterval(showRandomMessage, 3000);
+
+            // Clear interval when yes is clicked (but since it's inline, maybe not needed)
         }
 
 
@@ -711,7 +728,7 @@
         }
 
         function startFireworks() {
-            for (let i = 0; i < 20; i++) {
+            for (let i = 0; i < 50; i++) {
                 setTimeout(() => {
                     const f = document.createElement("div");
                     f.className = "firework";
@@ -719,7 +736,7 @@
                     f.style.top = Math.random() * 60 + "vh";
                     f.style.background = `hsl(${Math.random() * 360},100%,60%)`;
                     document.body.appendChild(f);
-                    setTimeout(() => f.remove(), 1200);
+                    setTimeout(() => f.remove(), 12000);
                 }, i * 120);
             }
         }
