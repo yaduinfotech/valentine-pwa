@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#ff2e63">
+    <meta name="description" content="A romantic Valentine app with PWA capabilities">
+    <title>Valentine Week ❤️</title>
+    <link rel="icon" type="image/x-icon"
+        href="https://www.pngplay.com/wp-content/uploads/1/Valentine-Heart-PNG-Clipart-Background.png">
+
+    <link rel="icon" href="https://www.pngplay.com/wp-content/uploads/1/Valentine-Heart-PNG-Clipart-Background.png">
+    <link rel="manifest" href="manifest.json">
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto
+        }
+
+        body {
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            background: #000;
+            color: #fff;
+            user-select: none
+        }
+
+        #lock {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #ff4e78, #ff1e56);
+            z-index: 9999
+        }
+
+        #lock.hidden {
+            opacity: 0;
+            visibility: hidden
+        }
+
+        #lock input {
+            padding: 15px;
+            border-radius: 30px;
+            border: none;
+            width: 250px;
+            text-align: center
+        }
+
+        #lock button {
+            margin-top: 15px;
+            padding: 12px 35px;
+            border-radius: 30px;
+            border: none;
+            font-weight: bold
+        }
+
+        .app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px
+        }
+
+        h1 {
+            text-shadow: 0 0 15px rgba(255, 255, 255, 0.4)
+        }
+
+        .message {
+            margin: 12px 0;
+            font-size: 1.05rem
+        }
+
+        #imgContainer {
+            width: 240px;
+            height: 240px
+        }
+
+        #dayImg {
+            width: 100%;
+            animation: float 3s infinite
+        }
+
+        /* DAY TESTER */
+        #dayTester {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 5px;
+            overflow-x: auto;
+            width: 90%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 20px;
+            backdrop-filter: blur(5px);
+            z-index: 10002;
+            scrollbar-width: none;
+        }
+
+        #dayTester::-webkit-scrollbar {
+            display: none;
+        }
+
+        .test-btn {
+            min-width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        /* MUSIC CONTROL */
+        #musicToggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1001;
+            font-size: 20px;
+        }
+
+
+
+        /* CHAT MODAL */
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 10000;
+            -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+            width: 90%;
+            max-width: 400px;
+            border-radius: 20px;
+            padding: 20px;
+            max-height: 75vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat {
+            overflow-y: auto;
+            flex: 1;
+            margin-bottom: 15px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin: 8px 0;
+            max-width: 85%;
+            font-size: 0.95rem;
+            line-height: 1.3;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .me {
+            background: rgba(255, 255, 255, 0.25);
+            align-self: flex-start;
+        }
+
+        .you {
+            background: #fff;
+            color: #ff2e63;
+            margin-left: auto;
+            align-self: flex-end;
+        }
+
+        @keyframes float {
+            50% {
+                transform: translateY(-15px)
+            }
+        }
+
+        .main-btn {
+            padding: 12px 25px;
+            border-radius: 30px;
+            border: none;
+            font-weight: bold;
+            background: #fff;
+            color: #ff2e63
+        }
+
+        .secondary-btn {
+            padding: 10px 20px;
+            border-radius: 30px;
+            border: 1px solid #fff;
+            background: transparent;
+            color: #fff
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000
+        }
+
+        .modal-box {
+            background: linear-gradient(135deg, #ff758c, #ff7eb3);
+            padding: 20px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px
+        }
+
+        .chat {
+            max-height: 50vh;
+            overflow-y: auto
+        }
+
+        .bubble {
+            padding: 10px 14px;
+            border-radius: 18px;
+            margin: 8px 0;
+            max-width: 80%
+        }
+
+        .me {
+            background: rgba(255, 255, 255, 0.3)
+        }
+
+        .you {
+            background: #fff;
+            color: #ff2e63;
+            margin-left: auto
+        }
+
+        .particle {
+            position: fixed;
+            top: -10%;
+            animation: fall 12s linear forwards;
+            font-size: 24px
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(120vh) rotate(360deg);
+                opacity: 0
+            }
+        }
+
+        .firework {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            animation: explode 1.2s forwards
+        }
+
+        @keyframes explode {
+            to {
+                transform: scale(12);
+                opacity: 0
+            }
+        }
+
+        #noBtnInline {
+            transition: transform 0.3s
+        }
+
+        #shareCard {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: linear-gradient(135deg, #ff0844, #ff2e63);
+            z-index: 20000;
+            color: #fff;
+            text-align: center;
+            padding: 30px
+        }
+
+        /* SHAKE ANIMATION */
+        @keyframes shake {
+            0% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-3px);
+            }
+
+            50% {
+                transform: translateX(3px);
+            }
+
+            75% {
+                transform: translateX(-3px);
+            }
+
+            100% {
+                transform: translateX(0);
+            }
+        }
+
+        /* HEARTBEAT */
+        @keyframes heartbeat {
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            25% {
+                transform: scale(1.3);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+        }
+
+        .heartbeat {
+            position: absolute;
+            font-size: 20px;
+            animation: heartbeat 1s infinite;
+            pointer-events: none;
+        }
+
+        /* THINK AGAIN MESSAGE */
+        #thinkAgainMsg {
+            animation: shake 0.4s;
+            transition: color 0.6s ease;
+        }
+
+        /* YES MESSAGE */
+        #yesMessage {
+            margin-top: 15px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            text-align: center;
+            opacity: 0;
+            animation: fadeInUp 1.2s ease forwards;
+        }
+
+        /* Glow text */
+        .yes-glow {
+            text-shadow:
+                0 0 8px rgba(255, 105, 180, 0.6),
+                0 0 16px rgba(255, 20, 147, 0.8);
+        }
+
+        /* Floating hearts */
+        .floating-heart {
+            position: fixed;
+            font-size: 18px;
+            animation: floatUp 4s linear forwards;
+            pointer-events: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes floatUp {
+            from {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateY(-120px);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <audio id="whisperSound" preload="auto">
+        <source src="whisper.mp3" type="audio/mpeg">
+    </audio>
+
+    <button id="musicToggle" onclick="toggleMusic()">🎵</button>
+
+    <div id="dayTester">
+        <button class="test-btn" onclick="testDay(7)">7</button>
+        <button class="test-btn" onclick="testDay(8)">8</button>
+        <button class="test-btn" onclick="testDay(9)">9</button>
+        <button class="test-btn" onclick="testDay(10)">10</button>
+        <button class="test-btn" onclick="testDay(11)">11</button>
+        <button class="test-btn" onclick="testDay(12)">12</button>
+        <button class="test-btn" onclick="testDay(13)">13</button>
+        <button class="test-btn" onclick="testDay(14)">14</button>
+    </div>
+
+    <audio id="bgMusic" loop></audio>
+
+    <div id="lock">
+        <h2>🔐 A Little Surprise ❤️</h2>
+        <input type="password" id="pass" placeholder="Secret word..." autocomplete="off">
+        <button onclick="unlock()">Unlock</button>
+    </div>
+
+    <div class="app">
+        <h1 id="title"></h1>
+        <p class="message" id="wish"></p>
+
+        <div id="imgContainer">
+            <img id="dayImg">
+        </div>
+
+        <div class="btn-group">
+            <button class="main-btn" onclick="openChat()">💬 Click Here</button>
+        </div>
+
+        <!-- INLINE VALENTINE (ONLY FEB 14) -->
+        <div id="valentineInline" style="display:none;gap:12px;margin-top:15px;">
+            <p class="message">Will You be my Valentine!!</p>
+            <div style="position:relative; display:block; gap:12px;">
+                <button class="main-btn" id="yesBtn" onclick="valentineYes()">Yes 💕</button>
+                <button class="secondary-btn" id="noBtnInline" style="cursor: pointer;">No 🙈</button>
+
+                <!-- HEART -->
+                <div id="heartBeat" class="heartbeat" style="display:none;">❤️</div>
+            </div>
+        </div>
+
+        <!-- THINK AGAIN MESSAGE -->
+        <small id="thinkAgainMsg" style="
+        margin-top:18px;
+        font-size:0.9rem;
+        opacity:0;
+        transition:opacity 0.3s ease;
+    ">
+            Think again 🥺
+        </small>
+    </div>
+
+    <!-- CHAT MODAL -->
+
+    <div class="modal" id="chatModal">
+        <div class="modal-box">
+            <h3 id="chatTitle" style="text-align: center; margin-bottom: 10px;">💖 Story 💖</h3>
+            <div class="chat" id="chat"></div>
+            <button class="main-btn" style="width: 100%;" onclick="closeChat()">Close</button>
+        </div>
+    </div>
+
+    <!-- SHARE CARD -->
+    <div id="shareCard">
+        <h1>💍 I Said YES 💍</h1>
+        <p>Forever Locked ❤️</p>
+        <div style="font-size:90px;margin:20px;">💑</div>
+        <button class="main-btn" onclick="downloadYesShot()">📸 Download</button>
+        <button class="secondary-btn" onclick="shareYesShot()">📤 Share</button>
+    </div>
+
+    <script>
+        const PASSWORD = "143";
+        let day = new Date().getDate();
+        let month = new Date().getMonth();
+        const VALENTINE_KEY = "valentine_answer";
+        const bgMusic = document.getElementById("bgMusic");
+        let isMusicPlaying = false;
+        let particleInterval;
+
+        const data = {
+            7: { title: "Happy Rose Day", bg: "linear-gradient(135deg, #ff5f8f, #ff1e56)", wish: "May your life bloom like a beautiful rose.", particle: "🌹", img: "rose.png", music: "rose.mp3", chat: [["me", "Happy Rose Day! 🌹"], ["you", "Thank you!"], ["me", "I picked the perfect one for you."], ["you", "Why this one?"], ["me", "It reminded me of your beauty."], ["you", "So sweet."], ["me", "Hope your life is always colorful."], ["you", "With you by my side."], ["me", "Always."], ["you", "❤️🌹"]] },
+            8: { title: "Happy Propose Day", bg: "linear-gradient(135deg, #6a11cb, #2575fc)", wish: "Will you stay by my side forever?", particle: "💍", img: "propose.png", music: "promise.mp3", chat: [["me", "I have something to say."], ["you", "Yes?"], ["me", "Our journey has been amazing."], ["you", "It has."], ["me", "You make everything better."], ["you", "You too."], ["me", "So..."], ["you", "Yes?"], ["me", "Will you be my Valentine forever?"], ["you", "Yes! 💍❤️"]] },
+            9: { title: "Happy Chocolate Day", bg: "linear-gradient(135deg, #6d4c41, #3e2723)", wish: "Life is sweeter because I have you.", particle: "🍫", img: "chocolate.png", rose: "rose.mp3", chat: [["me", "Happy Chocolate Day! 🍫"], ["you", "Yay!"], ["me", "Got your favorites."], ["you", "You remembered!"], ["me", "Of course."], ["you", "They look yummy."], ["me", "Just like you 😉"], ["you", "Haha!"], ["me", "Life is sweet with you."], ["you", "And chocolate! 😋🍫"]] },
+            10: { title: "Happy Teddy Day", bg: "linear-gradient(135deg, #ff9a9e, #fad0c4)", wish: "Sending you a big warm teddy hug.", particle: "🧸", img: "teddy.png", music: "hug.mp3", chat: [["me", "A fluffy friend for you! 🧸"], ["you", "So cute!"], ["me", "For hugs when I'm away."], ["you", "I'll name him Tiny."], ["me", "Perfect."], ["you", "Like your hugs."], ["me", "Keep him close."], ["you", "I will."], ["me", "Happy Teddy Day."], ["you", "🧸❤️"]] },
+            11: { title: "Happy Promise Day", bg: "linear-gradient(135deg, #a1c4fd, #c2e9fb)", wish: "I promise to hold your hand forever.", particle: "✨", img: "promise.png", music: "promise.mp3", chat: [["me", "It's Promise Day."], ["you", "What's the promise?"], ["me", "To always listen."], ["you", "To support your dreams."], ["me", "To be your strength."], ["you", "To keep you laughing."], ["me", "To never let go."], ["you", "To love you more."], ["me", "Forever."], ["you", "🤝❤️✨"]] },
+            12: { title: "Happy Hug Day", bg: "linear-gradient(135deg, #f093fb, #f5576c)", wish: "A hug makes everything feel right.", particle: "🫂", img: "hug.png", music: "hug.mp3", chat: [["me", "Can I get a hug?"], ["you", "Of course! 🤗"], ["me", "Best place to be."], ["you", "Safe and warm."], ["me", "Feels so right."], ["you", "No words needed."], ["me", "Just our hearts."], ["you", "Stay like this?"], ["me", "Forever. Happy Hug Day."], ["you", "🤗❤️"]] },
+            13: { title: "Happy Kiss Day", bg: "linear-gradient(135deg, #ff0844, #ffb199)", wish: "Kisses are the language of the soul.", particle: "❤️", img: "kiss.png", music: "rose.mp3", chat: [["me", "Happy Kiss Day! 💋"], ["you", "💋❤️"], ["me", "A kiss for love."], ["you", "A kiss for us."], ["me", "Magic lips."], ["you", "Blushing!"], ["me", "All day long."], ["you", "Yes please."], ["me", "Savoring this."], ["you", "💋✨"]] },
+            14: { title: "Happy Valentine's Day", bg: "linear-gradient(135deg, #c31432, #240b36)", wish: "Happy Valentine's Day!", particle: "💝", img: "valentine.png", music: "valentine.mp3", chat: [["me", "The big day! ❤️"], ["you", "Happy Valentine's!"], ["me", "You look stunning."], ["you", "And you handsome."], ["me", "A whole day for us."], ["you", "Can't wait."], ["me", "Only us."], ["you", "Thanks for being mine."], ["me", "Thanks for choosing me."], ["you", "love you."], ["me", "Love you too. ❤️"]] }
+        };
+
+        let currentDay = data[day] || data[14];
+
+        function initApp(d, m) {
+            if (localStorage.getItem(VALENTINE_KEY) === "yes") {
+                document.querySelector(".app").innerHTML = `
+<h1>💍 Taken Forever 💍</h1>
+<p class="message">You already said <b>YES</b> ❤️<br>Locked forever 🔐</p>
+<div style="font-size:120px;">💑</div>`;
+                lock.classList.add("hidden");
+                startFireworks();
+                setTimeout(() => shareCard.style.display = "block", 2800);
+                return;
+            }
+
+            title.innerText = currentDay.title;
+            wish.innerHTML = currentDay.wish; "<b>💘 Will you be my Valentine? 💘</b>";
+            dayImg.src = currentDay.img;
+            bgMusic.src = currentDay.music || "rose.mp3";
+            if (isMusicPlaying) {
+                bgMusic.play().catch(e => console.log("Music play blocked", e));
+            }
+
+            document.getElementById('dayImg').onerror = function () {
+                this.src = "https://www.pngplay.com/wp-content/uploads/1/Valentine-Heart-PNG-Clipart-Background.png";
+            };
+            // chatBtn.style.display = "none";
+            if (d == 14 && m == 1) {
+                valentineInline.style.display = "flex";
+                setupInlineNoButton();
+            }
+        }
+
+
+        function testDay(d) {
+            day = d;
+            currentDay = data[day];
+            initApp(d, 1);
+            if (particleInterval) {
+                clearInterval(particleInterval);
+                startParticles();
+            }
+        }
+
+        function toggleMusic() {
+            if (isMusicPlaying) {
+                bgMusic.pause();
+                document.getElementById('musicToggle').innerText = "🔇";
+            } else {
+                bgMusic.play().catch(e => console.log("Music play blocked", e));
+                document.getElementById('musicToggle').innerText = "🎵";
+            }
+            isMusicPlaying = !isMusicPlaying;
+        }
+
+        function unlock() {
+            if (document.getElementById('pass').value === PASSWORD) {
+                document.getElementById('lock').classList.add('hidden');
+                if (window.Android) Android.triggerNotification(currentDay.title, "Happy Valentine Week! ❤️");
+
+                bgMusic.play().then(() => {
+                    isMusicPlaying = true;
+                    document.getElementById('musicToggle').innerText = "🎵";
+                }).catch(e => console.log("Audio play failed", e));
+
+                startParticles();
+            } else alert("Try from heart ❤️");
+        }
+
+
+        function openChat() {
+            const chatBox = document.getElementById('chat');
+            chatBox.innerHTML = "";
+            document.getElementById('chatModal').style.display = "flex";
+            currentDay.chat.forEach((msg, i) => {
+                setTimeout(() => {
+                    const b = document.createElement("div");
+                    b.className = `bubble ${msg[0]}`;
+                    b.innerText = msg[1];
+                    chatBox.appendChild(b);
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                }, i * 800);
+            });
+        }
+
+        function closeChat() { document.getElementById('chatModal').style.display = "none"; }
+
+
+        function valentineYes() {
+            localStorage.setItem(VALENTINE_KEY, "yes");
+
+            // Hide buttons
+            const inline = document.getElementById("valentineInline");
+            if (inline) inline.style.display = "none";
+
+            // Enhanced YES message
+            const msg = document.createElement("div");
+            document.getElementById("thinkAgainMsg").innerHTML = '';
+            msg.id = "yesMessage";
+            msg.className = "yes-glow";
+            msg.innerHTML = `
+      💍 <b>You just made my heart yours… forever.</b><br><br>
+      From this moment on,<br>
+      every heartbeat whispers <b>your name</b> ❤️<br><br>
+      <b>No exits. No takebacks. Just us.</b> 💑<br>
+      <i>Locked with love 🔐</i>
+    `;
+
+            document.querySelector(".app").appendChild(msg);
+
+            // Visual effects
+            startFireworks();
+            startParticles();
+            startFloatingHearts();
+
+            // Show share card after emotion lands
+            setTimeout(() => {
+                document.getElementById("shareCard").style.display = "block";
+            }, 8800);
+        }
+
+
+        function setupInlineNoButton() {
+            const noBtn = document.getElementById("noBtnInline");
+            const yesBtn = document.getElementById("yesBtn");
+            const msg = document.getElementById("thinkAgainMsg");
+            const heart = document.getElementById("heartBeat");
+            const whisper = document.getElementById("whisperSound");
+
+            let tries = 0;
+            let yesScale = 1;
+
+            if (!noBtn || !msg || !yesBtn) return;
+
+            noBtn.addEventListener("mouseover", () => {
+                tries++;
+
+                /* MOVE NO BUTTON */
+                noBtn.style.transform =
+                    `translate(${Math.random() * 140 - 70}px,${Math.random() * 80 - 40}px)`;
+
+                /* THINK AGAIN MESSAGE */
+                msg.style.opacity = "1";
+                msg.style.animation = "none";
+                msg.offsetHeight; // reset animation
+                msg.style.animation = "shake 0.4s";
+
+                if (tries === 1) {
+                    msg.innerText = "😢 Think again…";
+                    msg.style.color = "#ffd1dc";
+                } else if (tries === 2) {
+                    msg.innerText = "🥺 Please don’t say no…";
+                    msg.style.color = "#ff9aa2";
+                } else {
+                    msg.innerText = "🧸 Teddy is crying…";
+                    msg.style.color = "#ff4d4d";
+                }
+
+                /* HEARTBEAT */
+                heart.style.display = "block";
+                heart.style.left = noBtn.offsetLeft + 40 + "px";
+                heart.style.top = noBtn.offsetTop - 10 + "px";
+                heart.style.animationDuration = Math.max(0.4, 1 - tries * 0.15) + "s";
+
+                /* YES BUTTON GROWS */
+                yesScale += 0.08;
+                yesBtn.style.transform = `scale(${yesScale})`;
+
+                /* WHISPER SOUND */
+                if (whisper) {
+                    whisper.currentTime = 0;
+                    whisper.volume = Math.min(0.4, 0.15 + tries * 0.05);
+                    whisper.play().catch(() => { });
+                }
+            });
+
+
+        }
+
+
+        function startParticles() {
+            setInterval(() => {
+                const p = document.createElement("div");
+                p.className = "particle";
+                p.innerText = "❤️";
+                p.style.left = Math.random() * 100 + "vw";
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 12000);
+            }, 800);
+        }
+
+        function startFireworks() {
+            for (let i = 0; i < 20; i++) {
+                setTimeout(() => {
+                    const f = document.createElement("div");
+                    f.className = "firework";
+                    f.style.left = Math.random() * 100 + "vw";
+                    f.style.top = Math.random() * 60 + "vh";
+                    f.style.background = `hsl(${Math.random() * 360},100%,60%)`;
+                    document.body.appendChild(f);
+                    setTimeout(() => f.remove(), 1200);
+                }, i * 120);
+            }
+        }
+
+        function downloadYesShot() {
+            html2canvas(shareCard).then(c => {
+                const a = document.createElement("a");
+                a.download = "i-said-yes.png";
+                a.href = c.toDataURL();
+                a.click();
+            });
+        }
+
+        function shareYesShot() {
+            html2canvas(shareCard).then(c => {
+                c.toBlob(b => {
+                    const f = new File([b], "yes.png", { type: "image/png" });
+                    if (navigator.canShare && navigator.canShare({ files: [f] })) {
+                        navigator.share({ title: "I Said YES 💍", files: [f] });
+                    } else alert("Please download ❤️");
+                });
+            });
+        }
+        function startFloatingHearts() {
+            for (let i = 0; i < 18; i++) {
+                setTimeout(() => {
+                    const h = document.createElement("div");
+                    h.className = "floating-heart";
+                    h.innerText = Math.random() > 0.5 ? "❤️" : "💖";
+                    h.style.left = Math.random() * 100 + "vw";
+                    h.style.bottom = "20px";
+                    h.style.fontSize = (Math.random() * 12 + 14) + "px";
+                    document.body.appendChild(h);
+                    setTimeout(() => h.remove(), 4000);
+                }, i * 150);
+            }
+        }
+
+
+        initApp(day, month);
+
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('Service Worker registered');
+                })
+                .catch(error => {
+                    console.log('Service Worker registration failed');
+                });
+        }
+
+        // Request notification permission
+        if ('Notification' in window && navigator.serviceWorker) {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    console.log('Notification permission granted');
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>
